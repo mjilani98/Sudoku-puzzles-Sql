@@ -1,17 +1,13 @@
-package com.example.hw2q8;
+package com.example.hw3q5;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.GridLayout;
-import android.widget.RelativeLayout;
 
 public class AppInterface extends GridLayout
 {
@@ -43,7 +39,7 @@ public class AppInterface extends GridLayout
                 board[x][y].setTextSize((int)(width*0.2));
                 board[x][y].setTextColor(Color.parseColor("#FF000000"));
                 board[x][y].setInputType(InputType.TYPE_CLASS_NUMBER);
-                GridLayout.LayoutParams params = new GridLayout.LayoutParams( );
+                LayoutParams params = new LayoutParams( );
                 params.width = width;
                 params.height = width;
                 params.rowSpec = GridLayout.spec(x, 1);

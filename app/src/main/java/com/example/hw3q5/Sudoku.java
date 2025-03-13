@@ -1,4 +1,4 @@
-package com.example.hw2q8;
+package com.example.hw3q5;
 
 import java.util.Random;
 
