@@ -4,6 +4,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
@@ -23,20 +25,27 @@ public class MainActivity extends AppCompatActivity {
     //app interface
     private AppInterface appInterface;
 
+    //file to save the puzzle
+    private final String FILE_NAME ="sudokuGame";
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
+        //setting layout
         int screenSize = getWindowManager().getCurrentWindowMetrics().getBounds().width();
         int width = screenSize/SIZE;
 
+        //create a button handler object
+        ButtonHandler handler = new ButtonHandler();
 
         //create game
         game = new Game();
 
         //create app interface
-        appInterface = new AppInterface(this,SIZE,width);
+        appInterface = new AppInterface(this,SIZE,width,handler);
 
         //set content view of the screen
         setContentView(appInterface);
@@ -54,7 +63,55 @@ public class MainActivity extends AppCompatActivity {
                 appInterface.setTextChangeHandler(temp,x,y);
             }
         }
+
+    }//end of constructor
+
+    //event handler that handles the button
+    public class ButtonHandler implements View.OnClickListener
+    {
+        @Override
+        public void onClick(View v)
+        {
+
+            //get the button id
+            int id=0;
+            id = appInterface.findButton((Button) v);
+
+            if(id == 1) //new game
+            {
+               //create a new game
+               Game newGame = new Game();
+
+                //get the new board and display in appInterface
+                int[][] newBoard = newGame.getBoard();
+                appInterface.drawInitialBoard(newBoard);
+
+                //resetting the text change handlers for the new edit texts
+                for(int x = 0; x < SIZE; x++)
+                {
+                    for(int y = 0; y < SIZE; y++)
+                    {
+                        TextChangeHandler temp = new TextChangeHandler(x, y);
+                        appInterface.setTextChangeHandler(temp, x, y);
+                    }
+                }
+
+            }
+
+            if(id == 2) //save game
+            {
+
+            }
+
+            if(id == 3) //retrieve game
+            {
+
+            }
+
+        }
     }
+
+
 
     public class TextChangeHandler implements TextWatcher
     {
