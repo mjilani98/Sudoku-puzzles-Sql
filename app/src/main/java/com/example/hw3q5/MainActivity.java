@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
 
     //name of the file to save the puzzle
     private final String FILE_NAME ="sudokuGame";
+
+    //name of the file that will store the current status of edit text
+    private final String CURRENT_EDIT_TEXT = "gameInputs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -85,7 +89,9 @@ public class MainActivity extends AppCompatActivity {
             {
                //create a new game
                 game = new Game();
-                appInterface.drawnewBoard(game.getBoard());
+
+                //display the new game
+                appInterface.drawInitialBoard(game.getBoard());
 
                 //resetting the text change handlers for the new edit texts
                 for(int x = 0; x < SIZE; x++)
@@ -101,18 +107,76 @@ public class MainActivity extends AppCompatActivity {
 
             if(id == 2) //save game
             {
+                //save the current game in a file
                 try
                 {
                     //open file for write
                     FileOutputStream fout = openFileOutput(FILE_NAME, Context.MODE_PRIVATE | Context.MODE_APPEND);
 
+                    //String builder to hold the current Puzzle
+                    StringBuilder stringBuilderb = new StringBuilder();
+
+                    //get the current board
+                    int[][] borad = game.getBoard();
+
+                    // Convert board to a string format (e.g., CSV style)
+                    for (int x = 0; x < SIZE; x++)
+                    {
+                        for (int y = 0; y < SIZE; y++)
+                        {
+                            stringBuilderb.append(borad[x][y]);
+                            if (y < SIZE - 1)
+                                stringBuilderb.append(","); // Separate numbers by commas
+                        }
+                        stringBuilderb.append("\n"); // New row
+                    }
+
                     //write the current bord to the file
+                    fout.write(stringBuilderb.toString().getBytes());
+                    fout.close();
 
                 }
-                catch (FileNotFoundException e)
+                catch (IOException e)
                 {
 
                 }
+
+                //save the current status of the current edit texts
+                try
+                {
+                    //open file for writing edit text status
+                    FileOutputStream fout = openFileOutput(CURRENT_EDIT_TEXT, Context.MODE_PRIVATE | Context.MODE_APPEND);
+
+                    //String builder to hold the current Puzzle
+                    StringBuilder stringBuilderb = new StringBuilder();
+
+
+                    //get the current board
+                    int[][] borad = game.getBoard();
+
+                    for (int x = 0; x < SIZE; x++)
+                    {
+                        for (int y = 0; y < SIZE; y++)
+                        {
+                            if(borad[x][y] > 0)
+                                stringBuilderb.append(1);
+                            else
+                                stringBuilderb.append(0);
+
+                            if (y < SIZE - 1)
+                                stringBuilderb.append(","); // Separate numbers by commas
+                        }
+                    }
+
+                    //write string builder to the file
+                    fout.write(stringBuilderb.toString().getBytes());
+                    fout.close();
+                }
+                catch (IOException e)
+                {
+
+                }
+
             }
 
             if(id == 3) //retrieve game
