@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 public class AppInterface extends RelativeLayout
 {
@@ -134,6 +135,7 @@ public class AppInterface extends RelativeLayout
         retrievePuzzleBtnLayout.addRule(RelativeLayout.RIGHT_OF,savePuzzleButton.getId());
         retrievePuzzleButton.setLayoutParams(retrievePuzzleBtnLayout);
         addView(retrievePuzzleButton);
+
 
     }
 

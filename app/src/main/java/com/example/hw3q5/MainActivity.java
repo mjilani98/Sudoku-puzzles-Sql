@@ -1,5 +1,6 @@
 package com.example.hw3q5;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,6 +15,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
 public class MainActivity extends AppCompatActivity {
 
     //the size of the board
@@ -25,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     //app interface
     private AppInterface appInterface;
 
-    //file to save the puzzle
+    //name of the file to save the puzzle
     private final String FILE_NAME ="sudokuGame";
 
     @Override
@@ -80,11 +84,8 @@ public class MainActivity extends AppCompatActivity {
             if(id == 1) //new game
             {
                //create a new game
-               Game newGame = new Game();
-
-                //get the new board and display in appInterface
-                int[][] newBoard = newGame.getBoard();
-                appInterface.drawInitialBoard(newBoard);
+                game = new Game();
+                appInterface.drawnewBoard(game.getBoard());
 
                 //resetting the text change handlers for the new edit texts
                 for(int x = 0; x < SIZE; x++)
@@ -100,7 +101,18 @@ public class MainActivity extends AppCompatActivity {
 
             if(id == 2) //save game
             {
+                try
+                {
+                    //open file for write
+                    FileOutputStream fout = openFileOutput(FILE_NAME, Context.MODE_PRIVATE | Context.MODE_APPEND);
 
+                    //write the current bord to the file
+
+                }
+                catch (FileNotFoundException e)
+                {
+
+                }
             }
 
             if(id == 3) //retrieve game
