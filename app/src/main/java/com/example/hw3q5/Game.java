@@ -4,6 +4,8 @@ public class Game
 {
     private int[][] board;
 
+    private int[][] flags;
+
     public Game()
     {
         //create Sudoku
@@ -11,7 +13,28 @@ public class Game
 
         //get a board
         board = sudoku.generate();
+
+        //create flags
+        flags = new int[board.length][board.length];
+        for(int x = 0 ; x < 9; x++)
+        {
+            for(int y =0  ; y < 9 ; y++)
+            {
+                if(board[x][y] == 0 )
+                    flags[x][y] = 0;
+                else
+                    flags[x][y] = 1;
+            }
+        }
+
     }
+
+    //method to return the flags array
+    public int[][] getFlags()
+    {
+        return flags;
+    }
+
 
     //method to return the  board
     public int[][] getBoard()
