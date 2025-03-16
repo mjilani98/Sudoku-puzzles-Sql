@@ -2,6 +2,7 @@ package com.example.hw3q5;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.TypedValue;
@@ -14,6 +15,11 @@ import android.widget.GridLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class AppInterface extends RelativeLayout
 {
     private final int BORDSIZE = 9;
@@ -22,6 +28,13 @@ public class AppInterface extends RelativeLayout
     private Button newPuzzleButton;
     private Button savePuzzleButton;
     private Button retrievePuzzleButton;
+
+    //file name that will save the current puzzle
+    private final String CURRENT_PUZZLE = "gameInputs";
+
+    private final String PUZZLE_FLAGS = "gameFlags";
+
+    private Game game;
 
     public AppInterface(Context context, int size, int width , OnClickListener buttonHandler)
     {
@@ -74,13 +87,15 @@ public class AppInterface extends RelativeLayout
         addView(boardGrid);
 
         //draw buttons and display them to the screen
-        drawButtons(context,buttonHandler);
+        drawButtons(context);
 
     }
 
     //method to display the buttons on the screen
-    private void drawButtons(Context context,OnClickListener buttonHandler)
+    private void drawButtons(Context context)
     {
+        ButtonListener listener = new ButtonListener();
+
         final int DP = (int)(getResources().getDisplayMetrics().density);
 
         //New Puzzle Button
@@ -89,7 +104,7 @@ public class AppInterface extends RelativeLayout
         newPuzzleButton.setText("New");
         newPuzzleButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         newPuzzleButton.setBackgroundColor(Color.parseColor("#6495ED"));
-        newPuzzleButton.setOnClickListener(buttonHandler);
+        newPuzzleButton.setOnClickListener(listener);
         //layouts for the new puzzle button
         RelativeLayout.LayoutParams newPuzzleBtnLayout = new RelativeLayout.LayoutParams(0,0);
         newPuzzleBtnLayout.width = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -106,7 +121,7 @@ public class AppInterface extends RelativeLayout
         savePuzzleButton.setText("Save");
         savePuzzleButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         savePuzzleButton.setBackgroundColor(Color.parseColor("#6495ED"));
-        savePuzzleButton.setOnClickListener(buttonHandler);
+        savePuzzleButton.setOnClickListener(listener);
         //layouts for the save puzzle button
         RelativeLayout.LayoutParams savePuzzleBtnLayout = new RelativeLayout.LayoutParams(0,0);
         savePuzzleBtnLayout.width = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -124,7 +139,7 @@ public class AppInterface extends RelativeLayout
         retrievePuzzleButton.setText("Retrieve");
         retrievePuzzleButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         retrievePuzzleButton.setBackgroundColor(Color.parseColor("#6495ED"));
-        retrievePuzzleButton.setOnClickListener(buttonHandler);
+        retrievePuzzleButton.setOnClickListener(listener);
         //layouts for the retrieve puzzle button
         RelativeLayout.LayoutParams retrievePuzzleBtnLayout = new RelativeLayout.LayoutParams(0,0);
         retrievePuzzleBtnLayout.width = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -173,6 +188,18 @@ public class AppInterface extends RelativeLayout
         board[x][y].setText("");
     }
 
+    public void clearBoard()
+    {
+        for(int x = 0 ; x < BORDSIZE ; x++)
+        {
+            for (int y = 0; y < BORDSIZE; y++)
+            {
+                board[x][y].setText("");
+                board[x][y].setEnabled(true);
+            }
+        }
+    }
+
     public void setTextChangeHandler(TextWatcher temp, int x, int y)
     {
         board[x][y].addTextChangedListener(temp);
@@ -199,5 +226,205 @@ public class AppInterface extends RelativeLayout
         }
 
         return id;
+    }
+
+    //event handler that handles the button
+    public class ButtonListener implements View.OnClickListener
+    {
+        @Override
+        public void onClick(View v)
+        {
+            int id = findButton((Button) v);
+
+            if(id == 1) // new game
+            {
+                game = new Game();
+                clearBoard();
+                drawInitialBoard(game.getBoard());
+
+            }
+            else if (id == 2) // save current game
+            {
+                //save the current puzzle in a game
+                try
+                {
+                    //open file for writing edit text status
+                    FileOutputStream fout =getContext().openFileOutput(CURRENT_PUZZLE, Context.MODE_PRIVATE | Context.MODE_APPEND);
+
+                    //String builder to hold the current Puzzle
+                    StringBuilder stringBuilder = new StringBuilder();
+
+
+                    //get the current board
+                    int[][] currentBoard = game.getBoard();
+
+                    for (int x = 0; x < BORDSIZE; x++)
+                    {
+                        for (int y = 0; y < BORDSIZE; y++)
+                        {
+                            stringBuilder.append(currentBoard[x][y]);
+                            if (y < BORDSIZE - 1)
+                                stringBuilder.append(","); // Separate numbers by commas
+                        }
+                    }
+
+                    //write string builder to the file
+                    fout.write(stringBuilder.toString().getBytes());
+                    fout.close();
+                }
+                catch (IOException e)
+                {
+
+                }
+
+                //save the flags of the current game
+                try
+                {
+                    //open file for writing edit text status
+                    FileOutputStream fout =getContext().openFileOutput(PUZZLE_FLAGS, Context.MODE_PRIVATE | Context.MODE_APPEND);
+
+                    //String builder to hold the current Puzzle
+                    StringBuilder stringBuilder = new StringBuilder();
+
+
+                    //get the current board
+                    int[][] flags = game.getFlags();
+
+                    for (int x = 0; x < flags.length; x++)
+                    {
+                        for (int y = 0; y < flags.length; y++)
+                        {
+                            stringBuilder.append(flags[x][y]);
+                            if (y < BORDSIZE - 1)
+                                stringBuilder.append(","); // Separate numbers by commas
+                        }
+                    }
+
+                    //write string builder to the file
+                    fout.write(stringBuilder.toString().getBytes());
+                    fout.close();
+                }
+                catch (IOException e)
+                {
+
+                }
+
+
+
+                //prints
+                System.out.println("The current game");
+                for (int x = 0; x < game.getBoard().length; x++)
+                {
+                    for (int y = 0; y < game.getBoard().length; y++)
+                    {
+                        System.out.print(game.getBoard()[x][y]+" ");
+                    }
+                    System.out.println();
+                }
+
+                System.out.println("The flags");
+                int[][] flags = game.getFlags();
+                for (int x = 0; x < flags.length; x++)
+                {
+                    for (int y = 0; y < flags.length; y++)
+                    {
+                        System.out.print(flags[x][y]+" ");
+                    }
+                    System.out.println();
+                }
+
+
+            }
+            else if(id == 3) // retrieve game
+            {
+
+            }
+
+        }
+
+
+    }
+
+    public class TextChangedListern implements TextWatcher
+    {
+        private int x;
+        private int y;
+
+        public TextChangedListern(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count)
+        {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) //here
+        {
+            String input = getInput(x,y);
+
+            //if input (edit text) is equal to ""
+            //set the value on the board to a zero
+            if(input.equals(""))
+            {
+                game.setValue(0,x,y);
+            }
+            //if input (edit text) is equal to "0"
+            //clear x,y on the interface
+            else if(input.equals("0"))
+            {
+                game.setValue(0,x,y);
+                clear(x,y);
+            }
+            //if the input length is greater than 1
+            //set 0 at x,y on board
+            //clear x,y on interface
+            else if(input.length() > 1)
+            {
+                game.setValue(0,x,y);
+                clear(x,y);
+
+            }
+            else
+            {
+                //value = convert input to integer
+                int value=0;
+                //convert input to integer
+                try
+                {
+                    value = Integer.parseInt(input);
+                }
+                catch (NumberFormatException e)
+                {}
+
+                //if value can be placed at x ,y on game board
+                if(!game.check(value,x,y))
+                {
+                    //set value at x,y on board
+                    game.setValue(value,x,y);
+                }
+                else
+                {
+                    //set 0 at x,y on board
+                    game.setValue(0,x,y);
+
+                    //clear x,y on interface
+                    clear(x,y);
+
+                }
+            }
+
+
+
+        }
     }
 }
