@@ -46,14 +46,11 @@ public class MainActivity extends AppCompatActivity {
         int screenSize = getWindowManager().getCurrentWindowMetrics().getBounds().width();
         int width = screenSize/SIZE;
 
-        //create a button handler object
-        ButtonHandler handler = new ButtonHandler();
-
         //create game
         game = new Game();
 
         //create app interface
-        appInterface = new AppInterface(this,SIZE,width,handler);
+        appInterface = new AppInterface(this,SIZE,width);
 
         //set content view of the screen
         setContentView(appInterface);
@@ -74,121 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
     }//end of constructor
 
-    //event handler that handles the button
-    public class ButtonHandler implements View.OnClickListener
-    {
-        @Override
-        public void onClick(View v)
-        {
-
-            //get the button id
-            int id=0;
-            id = appInterface.findButton((Button) v);
-
-            if(id == 1) //new game
-            {
-               //create a new game
-                game = new Game();
-
-                //display the new game
-                appInterface.drawInitialBoard(game.getBoard());
-
-                //resetting the text change handlers for the new edit texts
-                for(int x = 0; x < SIZE; x++)
-                {
-                    for(int y = 0; y < SIZE; y++)
-                    {
-                        TextChangeHandler temp = new TextChangeHandler(x, y);
-                        appInterface.setTextChangeHandler(temp, x, y);
-                    }
-                }
-
-            }
-
-            if(id == 2) //save game
-            {
-                //save the current game in a file
-                try
-                {
-                    //open file for write
-                    FileOutputStream fout = openFileOutput(FILE_NAME, Context.MODE_PRIVATE | Context.MODE_APPEND);
-
-                    //String builder to hold the current Puzzle
-                    StringBuilder stringBuilderb = new StringBuilder();
-
-                    //get the current board
-                    int[][] borad = game.getBoard();
-
-                    // Convert board to a string format (e.g., CSV style)
-                    for (int x = 0; x < SIZE; x++)
-                    {
-                        for (int y = 0; y < SIZE; y++)
-                        {
-                            stringBuilderb.append(borad[x][y]);
-                            if (y < SIZE - 1)
-                                stringBuilderb.append(","); // Separate numbers by commas
-                        }
-                        stringBuilderb.append("\n"); // New row
-                    }
-
-                    //write the current bord to the file
-                    fout.write(stringBuilderb.toString().getBytes());
-                    fout.close();
-
-                }
-                catch (IOException e)
-                {
-
-                }
-
-                //save the current status of the current edit texts
-                try
-                {
-                    //open file for writing edit text status
-                    FileOutputStream fout = openFileOutput(CURRENT_EDIT_TEXT, Context.MODE_PRIVATE | Context.MODE_APPEND);
-
-                    //String builder to hold the current Puzzle
-                    StringBuilder stringBuilderb = new StringBuilder();
-
-
-                    //get the current board
-                    int[][] borad = game.getBoard();
-
-                    for (int x = 0; x < SIZE; x++)
-                    {
-                        for (int y = 0; y < SIZE; y++)
-                        {
-                            if(borad[x][y] > 0)
-                                stringBuilderb.append(1);
-                            else
-                                stringBuilderb.append(0);
-
-                            if (y < SIZE - 1)
-                                stringBuilderb.append(","); // Separate numbers by commas
-                        }
-                    }
-
-                    //write string builder to the file
-                    fout.write(stringBuilderb.toString().getBytes());
-                    fout.close();
-                }
-                catch (IOException e)
-                {
-
-                }
-
-            }
-
-            if(id == 3) //retrieve game
-            {
-
-            }
-
-        }
-    }
-
-
-
+    //text watcher that keeps track of changes of the edit texts
     public class TextChangeHandler implements TextWatcher
     {
         private int x;
@@ -274,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+    //method that shows the dialog box
     private void showDialogBox()
     {
         //create a dialog
@@ -294,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    //class that handles the dialog box
     private class DialogBoxListener implements DialogInterface.OnClickListener
     {
         @Override
