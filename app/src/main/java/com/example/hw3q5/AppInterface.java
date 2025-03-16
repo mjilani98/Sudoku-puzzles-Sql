@@ -36,7 +36,7 @@ public class AppInterface extends RelativeLayout
 
     private Game game;
 
-    public AppInterface(Context context, int size, int width , OnClickListener buttonHandler)
+    public AppInterface(Context context, int size, int width )
     {
         super(context);
 
