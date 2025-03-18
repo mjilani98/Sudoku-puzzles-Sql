@@ -15,10 +15,13 @@ import android.widget.GridLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class AppInterface extends RelativeLayout
 {
@@ -28,18 +31,22 @@ public class AppInterface extends RelativeLayout
     private Button newPuzzleButton;
     private Button savePuzzleButton;
     private Button retrievePuzzleButton;
+    private boolean watcher = false;
 
     //file name that will save the current puzzle
     private final String CURRENT_PUZZLE = "gameInputs";
 
+    //file name the will save the flags of the game
     private final String PUZZLE_FLAGS = "gameFlags";
 
-    private Game game;
+    //game object
+    private Game game ;
 
     public AppInterface(Context context, int size, int width )
     {
         super(context);
 
+        game = new Game();
 
         // Create a GridLayout for the Sudoku board
         boardGrid = new GridLayout(context);
@@ -77,7 +84,7 @@ public class AppInterface extends RelativeLayout
         }
 
         // Sudoku Grid Layout Parameters
-        RelativeLayout.LayoutParams gridParams = new RelativeLayout.LayoutParams(
+        LayoutParams gridParams = new LayoutParams(
         LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         gridParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         gridParams.topMargin = 50;
@@ -106,7 +113,7 @@ public class AppInterface extends RelativeLayout
         newPuzzleButton.setBackgroundColor(Color.parseColor("#6495ED"));
         newPuzzleButton.setOnClickListener(listener);
         //layouts for the new puzzle button
-        RelativeLayout.LayoutParams newPuzzleBtnLayout = new RelativeLayout.LayoutParams(0,0);
+        LayoutParams newPuzzleBtnLayout = new LayoutParams(0,0);
         newPuzzleBtnLayout.width = ViewGroup.LayoutParams.WRAP_CONTENT;
         newPuzzleBtnLayout.height = ViewGroup.LayoutParams.WRAP_CONTENT;
         newPuzzleBtnLayout.leftMargin = 50 * DP;
@@ -123,7 +130,7 @@ public class AppInterface extends RelativeLayout
         savePuzzleButton.setBackgroundColor(Color.parseColor("#6495ED"));
         savePuzzleButton.setOnClickListener(listener);
         //layouts for the save puzzle button
-        RelativeLayout.LayoutParams savePuzzleBtnLayout = new RelativeLayout.LayoutParams(0,0);
+        LayoutParams savePuzzleBtnLayout = new LayoutParams(0,0);
         savePuzzleBtnLayout.width = ViewGroup.LayoutParams.WRAP_CONTENT;
         savePuzzleBtnLayout.height = ViewGroup.LayoutParams.WRAP_CONTENT;
         savePuzzleBtnLayout.leftMargin = 50 * DP;
@@ -141,7 +148,7 @@ public class AppInterface extends RelativeLayout
         retrievePuzzleButton.setBackgroundColor(Color.parseColor("#6495ED"));
         retrievePuzzleButton.setOnClickListener(listener);
         //layouts for the retrieve puzzle button
-        RelativeLayout.LayoutParams retrievePuzzleBtnLayout = new RelativeLayout.LayoutParams(0,0);
+        LayoutParams retrievePuzzleBtnLayout = new LayoutParams(0,0);
         retrievePuzzleBtnLayout.width = ViewGroup.LayoutParams.WRAP_CONTENT;
         retrievePuzzleBtnLayout.height = ViewGroup.LayoutParams.WRAP_CONTENT;
         retrievePuzzleBtnLayout.leftMargin = 50 * DP;
@@ -154,10 +161,11 @@ public class AppInterface extends RelativeLayout
 
     }
 
-
     // Method to display the board
-    public void drawInitialBoard(int[][] brd)
+    public void drawInitialBoard()
     {
+        int[][] brd = game.getBoard();
+
         for (int x = 0; x < BORDSIZE; x++)
         {
             for (int y = 0; y < BORDSIZE; y++)
@@ -178,16 +186,19 @@ public class AppInterface extends RelativeLayout
         }
     }
 
+    //method return the current input in given edit text
     public String getInput(int x, int y)
     {
         return board[x][y].getText().toString();
     }
 
+    //method clears the board
     public void clear(int x, int y)
     {
         board[x][y].setText("");
     }
 
+    //method clears the board
     public void clearBoard()
     {
         for(int x = 0 ; x < BORDSIZE ; x++)
@@ -200,6 +211,7 @@ public class AppInterface extends RelativeLayout
         }
     }
 
+    //method set textChange handler to edit texts
     public void setTextChangeHandler(TextWatcher temp, int x, int y)
     {
         board[x][y].addTextChangedListener(temp);
@@ -228,8 +240,43 @@ public class AppInterface extends RelativeLayout
         return id;
     }
 
+
+    //method draws new board to the screen
+    public void drawNewBoard(int[][] brd , int[][] flags)
+    {
+        //create the board
+        for (int x = 0; x < BORDSIZE; x++)
+        {
+            for (int y = 0; y < BORDSIZE; y++)
+            {
+                if(flags[x][y]== 1)
+                {
+                    board[x][y].setText(brd[x][y]+"");
+                    board[x][y].setBackgroundColor(Color.parseColor("#606060"));
+                    board[x][y].setEnabled(false);
+                }
+                else
+                {
+                    if(brd[x][y]==0)
+                    {
+                        board[x][y].setText("");
+                        board[x][y].setBackgroundColor(Color.parseColor("#A8A8A8"));
+                        board[x][y].setEnabled(true);
+                    }
+                    else
+                    {
+                        board[x][y].setText(brd[x][y]+"");
+                        board[x][y].setBackgroundColor(Color.parseColor("#A8A8A8"));
+                        board[x][y].setEnabled(true);
+                    }
+
+                }
+            }
+        }
+    }
+
     //event handler that handles the button
-    public class ButtonListener implements View.OnClickListener
+    public class ButtonListener implements OnClickListener
     {
         @Override
         public void onClick(View v)
@@ -238,10 +285,20 @@ public class AppInterface extends RelativeLayout
 
             if(id == 1) // new game
             {
+                //create a new game
                 game = new Game();
-                clearBoard();
-                drawInitialBoard(game.getBoard());
 
+                //clear the board
+                clearBoard();
+
+                //turn off the text watcher
+                watcher = true;
+
+                //displaying the new board
+                drawNewBoard(game.getBoard(),game.getFlags());
+
+                //turn on the text watcher
+                watcher = false;
             }
             else if (id == 2) // save current game
             {
@@ -249,15 +306,28 @@ public class AppInterface extends RelativeLayout
                 try
                 {
                     //open file for writing edit text status
-                    FileOutputStream fout =getContext().openFileOutput(CURRENT_PUZZLE, Context.MODE_PRIVATE | Context.MODE_APPEND);
+                    FileOutputStream fout =getContext().openFileOutput(CURRENT_PUZZLE, Context.MODE_PRIVATE );
 
                     //String builder to hold the current Puzzle
                     StringBuilder stringBuilder = new StringBuilder();
 
+                    //the current board
+                    int[][] currentBoard = new int[BORDSIZE][BORDSIZE];
 
-                    //get the current board
-                    int[][] currentBoard = game.getBoard();
+                    //reading the current board from the edit texts
+                    String input ="";
+                    for(int x = 0 ; x<BORDSIZE ; x++)
+                    {
+                        for(int y = 0 ; y< BORDSIZE ; y++)
+                        {
+                            input = getInput(x,y);
+                            if(input.equals(""))
+                                input = "0";
+                            currentBoard[x][y] = Integer.parseInt(input);
+                        }
+                    }
 
+                    //write the current board to the file
                     for (int x = 0; x < BORDSIZE; x++)
                     {
                         for (int y = 0; y < BORDSIZE; y++)
@@ -266,6 +336,7 @@ public class AppInterface extends RelativeLayout
                             if (y < BORDSIZE - 1)
                                 stringBuilder.append(","); // Separate numbers by commas
                         }
+                        stringBuilder.append("\n");
                     }
 
                     //write string builder to the file
@@ -281,7 +352,7 @@ public class AppInterface extends RelativeLayout
                 try
                 {
                     //open file for writing edit text status
-                    FileOutputStream fout =getContext().openFileOutput(PUZZLE_FLAGS, Context.MODE_PRIVATE | Context.MODE_APPEND);
+                    FileOutputStream fout =getContext().openFileOutput(PUZZLE_FLAGS, Context.MODE_PRIVATE );
 
                     //String builder to hold the current Puzzle
                     StringBuilder stringBuilder = new StringBuilder();
@@ -298,6 +369,7 @@ public class AppInterface extends RelativeLayout
                             if (y < BORDSIZE - 1)
                                 stringBuilder.append(","); // Separate numbers by commas
                         }
+                        stringBuilder.append("\n");
                     }
 
                     //write string builder to the file
@@ -308,49 +380,92 @@ public class AppInterface extends RelativeLayout
                 {
 
                 }
-
-
-
-                //prints
-                System.out.println("The current game");
-                for (int x = 0; x < game.getBoard().length; x++)
-                {
-                    for (int y = 0; y < game.getBoard().length; y++)
-                    {
-                        System.out.print(game.getBoard()[x][y]+" ");
-                    }
-                    System.out.println();
-                }
-
-                System.out.println("The flags");
-                int[][] flags = game.getFlags();
-                for (int x = 0; x < flags.length; x++)
-                {
-                    for (int y = 0; y < flags.length; y++)
-                    {
-                        System.out.print(flags[x][y]+" ");
-                    }
-                    System.out.println();
-                }
-
-
             }
             else if(id == 3) // retrieve game
             {
+                // board from the file
+                int[][] boardFromFile = new int[BORDSIZE][BORDSIZE];
+                int[][] flagsFromFile = new int[BORDSIZE][BORDSIZE];
 
+                //open , retrieve the saved puzzle
+                try
+                {
+                    FileInputStream fin = getContext().openFileInput(CURRENT_PUZZLE);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(fin));
+
+
+                    String line;
+                    int row = 0 ;
+
+                    // Read the file line by line
+                    while ((line = reader.readLine()) != null && row < BORDSIZE)
+                    {
+                        String[] values = line.split(","); // Split by commas
+                        for (int col = 0; col < BORDSIZE; col++)
+                        {
+                            boardFromFile[row][col] = Integer.parseInt(values[col].trim());
+                        }
+                        row++;
+                    }
+
+                    // Close the reader
+                    reader.close();
+                }
+                catch (IOException e)
+                {
+
+                }
+
+                //open, retrieve the saved flags
+                try
+                {
+                    FileInputStream fin = getContext().openFileInput(PUZZLE_FLAGS);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(fin));
+
+
+                    String line;
+                    int row = 0 ;
+
+                    // Read the file line by line
+                    while ((line = reader.readLine()) != null && row < BORDSIZE)
+                    {
+                        String[] values = line.split(","); // Split by commas
+                        for (int col = 0; col < BORDSIZE; col++)
+                        {
+                            flagsFromFile[row][col] = Integer.parseInt(values[col].trim());
+                        }
+                        row++;
+                    }
+
+                    // Close the reader
+                    reader.close();
+                }
+                catch (IOException e)
+                {
+
+                }
+
+                game.setBoard(boardFromFile);
+                game.setFlags(flagsFromFile);
+
+                watcher = true;
+                clearBoard();
+                drawNewBoard(game.getBoard(), game.getFlags());
+                watcher = false;
             }
 
-        }
+        } //end of on click method
 
 
-    }
+    }// end of button listener class
 
-    public class TextChangedListern implements TextWatcher
+    //text watcher watches the edit texts changes
+    public class TextChangedListener implements TextWatcher
     {
         private int x;
         private int y;
 
-        public TextChangedListern(int x, int y)
+        public TextChangedListener(int x, int y)
         {
             this.x = x;
             this.y = y;
@@ -370,6 +485,10 @@ public class AppInterface extends RelativeLayout
         @Override
         public void afterTextChanged(Editable s) //here
         {
+            if(watcher)
+                return;
+
+            //get the input from the edit text
             String input = getInput(x,y);
 
             //if input (edit text) is equal to ""
@@ -411,20 +530,22 @@ public class AppInterface extends RelativeLayout
                 {
                     //set value at x,y on board
                     game.setValue(value,x,y);
+                    clear(x,y);
                 }
                 else
                 {
                     //set 0 at x,y on board
-                    game.setValue(0,x,y);
+                    game.setValue(value,x,y);
 
                     //clear x,y on interface
-                    clear(x,y);
+                   // clear(x,y);
 
                 }
             }
-
-
-
         }
-    }
-}
+    } //end of text watcher class
+
+
+}//end of class
+
+

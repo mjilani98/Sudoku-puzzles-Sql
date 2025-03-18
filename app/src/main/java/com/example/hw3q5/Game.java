@@ -35,6 +35,23 @@ public class Game
         return flags;
     }
 
+    public void setBoard(int[][] newBoard){
+        for(int i = 0 ; i < 9 ; i++) {
+            for(int j = 0 ; j < 9 ; j++){
+                board[i][j] = newBoard[i][j];
+            }
+        }
+    }
+
+    public void setFlags(int[][] newSetOfFlags){
+        for(int i = 0; i < 9 ; i++){
+            for(int j = 0 ; j < 9 ; j++){
+                flags[i][j] = newSetOfFlags[i][j];
+            }
+        }
+    }
+
+
 
     //method to return the  board
     public int[][] getBoard()

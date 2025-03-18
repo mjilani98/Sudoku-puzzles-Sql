@@ -50,14 +50,14 @@ public class MainActivity extends AppCompatActivity {
         game = new Game();
 
         //create app interface
-        appInterface = new AppInterface(this,SIZE,width);
+        appInterface = new AppInterface(this,SIZE,width );
 
         //set content view of the screen
         setContentView(appInterface);
 
         //get initial board and display in appInterface
         int[][] board = game.getBoard();
-        appInterface.drawInitialBoard(board);
+        appInterface.drawInitialBoard();
 
         //attach event handler to all edit text
         for(int x = 0 ; x< board.length ; x++)
@@ -150,69 +150,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            if(game.checkCompleted())
-            {
-                showDialogBox();
-            }
-
         }
     }
-    //method that shows the dialog box
-    private void showDialogBox()
-    {
-        //create a dialog
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-
-        //setting the message of the dialog box
-        dialog.setMessage("Success , Do you want to play again?");
-
-        //creating a listener for the dialog box
-        DialogBoxListener handler = new DialogBoxListener();
-
-        //setting the buttons labels
-        dialog.setPositiveButton("Yes",handler);
-        dialog.setNegativeButton("No",handler);
-        dialog.setNeutralButton("Cancel",handler);
-
-        //show the dialog box
-        dialog.show();
-    }
-
-    //class that handles the dialog box
-    private class DialogBoxListener implements DialogInterface.OnClickListener
-    {
-        @Override
-        public void onClick(DialogInterface dialog, int id)
-        {
-
-            //if the positive button is clicked, play a new game ;
-            if(id == -1)
-            {
-                //create a new game
-                game = new Game();
-                int[][] newBoard = game.getBoard();
 
 
-                //display the new game to the screen
-                appInterface.drawInitialBoard(newBoard);
 
-                //resetting the text change handlers for the new edit texts
-                for(int x = 0; x < SIZE; x++)
-                {
-                    for(int y = 0; y < SIZE; y++)
-                    {
-                        TextChangeHandler temp = new TextChangeHandler(x, y);
-                        appInterface.setTextChangeHandler(temp, x, y);
-                    }
-                }
-
-            }
-            //if the negative button is clicked, destroy the app
-            else if (id == -2)
-            {
-                MainActivity.this.finish();
-            }
-            else;
-        }
-    }
 }
